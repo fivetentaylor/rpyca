@@ -8,6 +8,19 @@ from scipy import sparse
 #from scipy.sparse import linalg
 from scipy import linalg
 
+# Set default logging handler to avoid "No handler found" warnings.
+import logging
+try:  # Python 2.7+
+    from logging import NullHandler
+except ImportError:
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+
+logger = logging.getLogger(__name__)
+logger.addHandler(NullHandler())
+
+
 def HT(M, t):
     '''
     Hard Threshold Function:
@@ -36,7 +49,7 @@ def error(A, B):
     '''
     return frob_norm(A - B)
 
-def rpca(M, eps=0.00001, k=1):
+def rpca(M, eps=0.001, r=1):
     '''
     An implementation of the robust pca algorithm as
     outlined in [need reference]
@@ -55,18 +68,19 @@ def rpca(M, eps=0.00001, k=1):
     S = HT(M - L, thresh)
 
     iterations = range(int(10 * np.log(n * B * frob_norm(M - S) / eps)))
+    logger.info('Number of iterations: %d to achieve eps = %f' % (len(iterations), eps))
 
-    for k in xrange(1, k+1):
+    for k in xrange(1, r+1):
         for t in iterations:
 
             U,s,Vt = linalg.svd(M - S, full_matrices=False)
-            thresh = B * ( s[-k] + s[-(k+1)] * (1/2)**t )
+            thresh = B * ( s[k] + s[k-1] * (1/2)**t )
 
             # Best rank k approximation of M - S
             L = np.dot(np.dot(U[:,:k], np.diag(s[:k])), Vt[:k])
             S = HT(M - L, thresh)
 
-        if (B * s[-(k+1)]) < (eps / (2*n)):
+        if (B * s[k]) < (eps / (2*n)):
             break
 
     return L,S
