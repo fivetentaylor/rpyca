@@ -16,9 +16,9 @@ fig = plt.figure()
 ax = fig.add_subplot(131, projection='3d')
 n = 100
 xa,ya,za = [],[],[]
-for c, m, zl, zh in [('r', 'o', -50, -25), ('b', '^', -30, -5)]:
-    xs = randrange(n, 0, 100)
-    ys = randrange(n, 0, 100)
+for c, m, zl, zh in [('r', 'o', 25, -25), ('b', '^', 5, -5)]:
+    xs = randrange(n, -100, 100)
+    ys = randrange(n, -50, 50)
     zs = randrange(n, zl, zh)
     xa.append(xs); ya.append(ys); za.append(zs);
     ax.scatter(xs, ys, zs, c=c, marker=m)

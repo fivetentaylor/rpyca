@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import ipdb
-
 import numpy as np
 import scipy as sp
 from scipy import sparse
@@ -77,7 +75,6 @@ def rpca(M, eps=0.001, r=1):
             thresh = B * ( s[k] + s[k-1] * (1/2)**t )
 
             # Best rank k approximation of M - S
-            ipdb.set_trace()
             L = np.dot(np.dot(U[:,:k], np.diag(s[:k])), Vt[:k])
             S = HT(M - L, thresh)
 
