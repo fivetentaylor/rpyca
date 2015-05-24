@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(NullHandler())
 
 
-def tga(X, p=0.5, k=1, eps=1e-5):
+def tga(X, p=0.49999, k=1, eps=1e-5):
     '''
     An implementation of the trimmed grassman average
     for robust principal component analysis
@@ -42,13 +42,13 @@ def tga(X, p=0.5, k=1, eps=1e-5):
 
     # Calculate the means and subtract them
     # from the data matrix
-    means = np.mean(X, axis=0)
-    X -= means
+    #means = np.mean(X, axis=0)
+    #X -= means
 
     vectors = np.zeros(k*n, dtype=X.dtype).reshape((k,n))
 
     for i in xrange(k):
-        mu = np.rand(n) - 0.5
+        mu = np.random.rand(n) - 0.5
         mu /= np.linalg.norm(mu)
 
         for _ in xrange(3):
@@ -56,12 +56,12 @@ def tga(X, p=0.5, k=1, eps=1e-5):
             mu = np.dot(dots.T, X)
             mu /= np.linalg.norm(mu)
 
-        for j in xrange(M):
+        for j in xrange(m):
             prev_mu = mu
 
             dot_signs = np.sign(np.dot(X, mu))
 
-            mu = sp.stats.trim_mean(X * dot_signs, p, axis=1)
+            mu = sp.stats.trim_mean(X.T * dot_signs, p, axis=1)
             mu /= np.linalg.norm(mu)
 
             if np.max(np.abs(mu - prev_mu)) < eps:
@@ -69,15 +69,17 @@ def tga(X, p=0.5, k=1, eps=1e-5):
 
         if i == 0:
             vectors[i] = mu
-            X = X - np.dot(mu, np.dot(X, mu).T)
+            #X = X - np.dot(mu, np.dot(X, mu).T)
+            X -= np.dot(np.dot(X, mu).reshape((-1,1)), mu.reshape((1,-1)))
         elif i < k:
             # should reorthogonalize mu to the existing basis like:
             # mu = reorth(vectors[:i], mu)
             # mu /= np.linalg.norm(mu)
             # for numerical stability (but mu should already be orthogonal)
             vectors[i] = mu
-            X = X - np.dot(mu, np.dot(X, mu).T)
-        else i == k:
+            #X = X - np.dot(mu, np.dot(X, mu).T)
+            X -= np.dot(np.dot(X, mu).reshape((-1,1)), mu.reshape((1,-1)))
+        else:
             # should reorthogonalize mu to the existing basis like:
             # mu = reorth(vectors[:i], mu)
             # mu /= np.linalg.norm(mu)
